@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Topicize</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css"
+    />
+  </head>
+
+  <body style="overflow-y: scroll">
+    <section class="px-5">
+      <div class="container">
+        <nav class="navbar" data-bs-theme="light">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('home') }}"> <b>Topic</b>ize </a>
+            <a
+              >Locate keywords and construct word clouds for your documents in
+              seconds.</a
+            >
+          </div>
+        </nav>
+      </div>
+    </section>
+
+    <section class="px-5 py-4 bg-primary-subtle">
+      <div class="container">
+        <form action="/topicize" method="POST" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="row">
+                <div class="mb-3">
+                  <label for="formFile" class="form-label"
+                    ><b>Upload document</b> (.doc, .docx, .pdf, .png, .jpg,
+                    .jpeg)</label
+                  >
+                  <input
+                    class="form-control"
+                    type="file"
+                    id="formFile"
+                    name="document"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <button id="submit_button" type="submit" class="btn btn-primary">Submit</button><span class="text-secondary"> ctrl + enter</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="exampleFormControlTextarea1" class="form-label"
+                  ><b>Keywords</b> (separated by comma)</label
+                >
+                <textarea
+                  class="form-control"
+                  id="exampleFormControlTextarea1"
+                  rows="3"
+                  name="keywords"
+                  placeholder="each, keyword, is, separated, by, a, comma"
+                  required
+                >
+{{ request.form.get('keywords', '') }}</textarea
+                >
+              </div>
+            </div>
+
+            <div class="col-md-4 border-start border-primary">
+              <div class="mb-3">
+                <label for="exampleFormControlTextarea2" class="form-label"
+                  >Keyword Bank</label
+                >
+                <textarea
+                  class="form-control"
+                  id="exampleFormControlTextarea2"
+                  rows="3"
+                  readonly
+                >
+digital resources, digital skills, digital solutions, digital strategy, digital technology, digital technology innovations, digital transformation</textarea
+                >
+              </div>
+            </div>
+          </div>
+          <div class="row"></div>
+        </form>
+      </div>
+    </section>
+
+    {% if payload['error'] is not none %}
+    <div class="alert alert-warning justify-content-center text-center" role="alert">
+        {{payload['error']}}
+    </div>
+    {% endif %}
+
+
+    {% if payload['table'] is not none %}
+    <section class="px-5 py-4">
+      <div class="container" style="min-height: 90vh">
+        <nav>
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button
+              class="nav-link active"
+              id="nav-one-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#nav-one"
+              type="button"
+              role="tab"
+              aria-controls="nav-one"
+              aria-selected="true"
+            >
+              Keyword Count
+            </button>
+            <button
+              class="nav-link"
+              id="nav-two-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#nav-two"
+              type="button"
+              role="tab"
+              aria-controls="nav-two"
+              aria-selected="false"
+            >
+              Keyword Cloud
+            </button>
+            <button
+              class="nav-link"
+              id="nav-three-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#nav-three"
+              type="button"
+              role="tab"
+              aria-controls="nav-three"
+              aria-selected="false"
+            >
+              Word Cloud
+            </button>
+            <!--<button-->
+            <!--  class="nav-link"-->
+            <!--  id="nav-four-tab"-->
+            <!--  data-bs-toggle="tab"-->
+            <!--  data-bs-target="#nav-four"-->
+            <!--  type="button"-->
+            <!--  role="tab"-->
+            <!--  aria-controls="nav-four"-->
+            <!--  aria-selected="false">-->
+              <!--Topics-->
+            <!--</button>-->
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div
+            class="tab-pane fade show active pt-4"
+            id="nav-one"
+            role="tabpanel"
+            aria-labelledby="nav-one-tab"
+            tabindex="0"
+          >
+            <table
+              id="keywordTable"
+              class="table table-striped"
+              style="width: 100%"
+            >
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Keyword</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for data in payload['table'] %}
+                <tr>
+                  <td>{{ data[0] }}</td>
+                  <td>{{ data[1] }}</td>
+                  <td>{{ data[2] }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th></th>
+                  <th>Total Keywords</th>
+                  <th>{{ payload['total_keywords'] }}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div
+            class="tab-pane fade"
+            id="nav-two"
+            role="tabpanel"
+            aria-labelledby="nav-two-tab"
+            tabindex="0"
+          >
+            <div class="card my-3">
+              <div class="card-body">
+                <p class="card-text">
+                  <small class="text-body-secondary"
+                    >A visualized summary of keyword usage in the document.</small
+                  >
+                </p>
+              </div>
+              <img
+                src="data:image/png;base64,{{ payload['keywordcloud'] }}"
+                class="card-img-bottom"
+                alt="Keyword Cloud"
+              />
+            </div>
+          </div>
+          <div
+            class="tab-pane fade"
+            id="nav-three"
+            role="tabpanel"
+            aria-labelledby="nav-three-tab"
+            tabindex="0"
+          >
+            <div class="card my-3">
+              <div class="card-body">
+                <p class="card-text">
+                  <small class="text-body-secondary"
+                    >A visualized summary of word usage in the document.</small
+                  >
+                </p>
+              </div>
+              <img
+                src="data:image/png;base64,{{ payload['wordcloud'] }}"
+                class="card-img-bottom"
+                alt="..."
+              />
+            </div>
+          </div>
+          <!--<div-->
+          <!--  class="tab-pane fade"-->
+          <!--  id="nav-four"-->
+          <!--  role="tabpanel"-->
+          <!--  aria-labelledby="nav-four-tab"-->
+          <!--  tabindex="0">-->
+          <!--  Future NLP implementation ~Keaton Yoputra-->
+          <!--</div>-->
+        </div>
+      </div>
+    </section>
+    {% endif %}
+  </body>
+  <footer class="bg-white text-dark">
+    <div class="bg-light py-2">
+      <div class="container text-center">
+        <p class="mb-0">&copy; 2023 Universitas Internasional Batam</p>
+      </div>
+    </div>
+  </footer>
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"
+  ></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+  <!--Datatables button-->
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $("#keywordTable").DataTable({
+        dom: "Bfrtip",
+        buttons: [
+          { extend: "pdfHtml5", className: "btn btn-primary" },
+          { extend: "copyHtml5", className: "btn btn-primary" },
+          { extend: "excelHtml5", className: "btn btn-primary" },
+          { extend: "csvHtml5", className: "btn btn-primary" },
+          { extend: "print", className: "btn btn-primary" },
+        ],
+      })
+    })
+  </script>
+  <!--Handle ctrl+enter to submit-->
+  <script>
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 'Enter') {
+            event.preventDefault(); // Prevent the default form submission
+            document.getElementById('submit_button').click(); // Trigger the click event of the submit button
+        }
+    });
+</script>
+</html>
