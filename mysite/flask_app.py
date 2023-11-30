@@ -59,13 +59,21 @@ def topicize():
         }
         return render_template('index.html', payload=payload)
     else:
-        keywords = [re.sub(r'\W+', '', keyword.strip()) for keyword in keywords.split(',') if re.sub(r'\W+', '', keyword.strip())]
-        regex = '|'.join(keywords)
+        keywords = [keyword.strip() for keyword in keywords.split(',')]
+        regex = '|'.join(r'\b{}\b'.format(re.escape(keyword)) for keyword in keywords)
 
     # match keywords to instances in texts
     matches = re.findall(regex, texts, flags=re.IGNORECASE)
     counts = Counter(matches)  # Using Counter to count occurrences of each keyword
-    table = [(i+1, keyword, count) for i, (keyword, count) in enumerate(counts.items()) if count > 0]  # Only include keywords with count > 0
+    # Only include keywords with count > 0
+    combined_table = {}
+    for keyword, count in counts.items():
+        keyword_lower = keyword.lower()
+        if keyword_lower in combined_table:
+            combined_table[keyword_lower] += count
+        else:
+            combined_table[keyword_lower] = count
+    table = [(i+1, keyword, count) for i, (keyword, count) in enumerate(combined_table.items())]
     total_keywords = sum(counts.values())
 
     # create a dictionary of word frequencies from the pairs data
@@ -77,7 +85,14 @@ def topicize():
         keywordcloud_str = None
     else:
         error_list = None
-        keywordcloud = WordCloud(width=1600, height=900, background_color='white').generate_from_frequencies(keyword_freq)
+        combined_keyword_freq = {}
+        for keyword, count in keyword_freq.items():
+            keyword_lower = keyword.lower()
+            if keyword_lower in combined_keyword_freq:
+                combined_keyword_freq[keyword_lower] += count
+            else:
+                combined_keyword_freq[keyword_lower] = count
+        keywordcloud = WordCloud(width=1600, height=900, background_color='white').generate_from_frequencies(combined_keyword_freq)
         img_buffer = BytesIO()
         keywordcloud.to_image().save(img_buffer, format='PNG')
         keywordcloud_str = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
@@ -91,6 +106,7 @@ def topicize():
 
     # create the payload dictionary with the word cloud image and other data
     payload = {
+        'keywords': keywords,
         'table': table,
         'total_keywords': total_keywords,
         'keywordcloud': keywordcloud_str,
