@@ -37,7 +37,7 @@
       <div class="container">
         <form action="/topicize" method="POST" enctype="multipart/form-data">
           <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-4 mb-3">
               <div class="row">
                 <div class="mb-3">
                   <label for="formFile" class="form-label"
@@ -59,8 +59,7 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="mb-3">
+            <div class="col-md-4 mb-3">
                 <label for="exampleFormControlTextarea1" class="form-label"
                   ><b>Keywords</b> (separated by comma)</label
                 >
@@ -74,7 +73,6 @@
                 >
 {{ request.form.get('keywords', '') }}</textarea
                 >
-              </div>
             </div>
 
             <div class="col-md-4 border-start border-primary">
@@ -103,7 +101,6 @@ digital resources, digital skills, digital solutions, digital strategy, digital 
         {{payload['error']}}
     </div>
     {% endif %}
-
 
     {% if payload['table'] is not none %}
     <section class="px-5 py-4">
@@ -155,6 +152,7 @@ digital resources, digital skills, digital solutions, digital strategy, digital 
             <!--  role="tab"-->
             <!--  aria-controls="nav-four"-->
             <!--  aria-selected="false">-->
+            <!--  ~Keaton Yoputra-->
               <!--Topics-->
             <!--</button>-->
           </div>
@@ -215,7 +213,7 @@ digital resources, digital skills, digital solutions, digital strategy, digital 
               <img
                 src="data:image/png;base64,{{ payload['keywordcloud'] }}"
                 class="card-img-bottom"
-                alt="Keyword Cloud"
+                alt="Keyword Cloud Unavailable"
               />
             </div>
           </div>
@@ -237,7 +235,7 @@ digital resources, digital skills, digital solutions, digital strategy, digital 
               <img
                 src="data:image/png;base64,{{ payload['wordcloud'] }}"
                 class="card-img-bottom"
-                alt="..."
+                alt="Word Cloud Unavailable"
               />
             </div>
           </div>
